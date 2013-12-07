@@ -1,33 +1,7 @@
 from twisted.internet import reactor
 from autobahn.websocket import WebSocketServerFactory, WebSocketServerProtocol, listenWS
+from Robot import UglyRobot
 import json
-
-def sgn(x):
-  return cmp(x, 0)
-
-class UglyRobot(object):
-
-  def __init__(self):
-    pass
-
-  def setVelocity(self, x, y):
-    print x, y
-    y = -y
-    leftPower = (y + x - x * y * (sgn(x) + sgn(y)) / 2) * 100
-    rightPower = (y - x - x * y * (sgn(x) - sgn(y)) / 2) * 100
-    # leftPower = (x - y) * 100
-    # rightPower = (-x - y) * 100
-    # if rightPower > 100:
-    #   print("mod left")
-    #   leftPower += (rightPower - 100) / 2
-    #   rightPower = 100
-    # if leftPower > 100:
-    #   print("mod right")
-    #   rightPower += (leftPower - 100) / 2
-    #   leftPower = 100
-    # if leftPower < -100:
-    #   leftPower = -(-100 - leftPower) / 2
-    print leftPower, rightPower
 
 class UglyGamepadController(object):
 
@@ -41,7 +15,7 @@ class UglyGamepadController(object):
     stickX = self.state.get("LEFT_STICK_X")
     stickY = self.state.get("LEFT_STICK_Y")
     if stickX is not None and stickY is not None:
-      self.robot.setVelocity(stickX, stickY)
+      self.robot.setVelocity(stickX, -stickY)
 
 class UglyProtocol(WebSocketServerProtocol):
 
@@ -63,8 +37,9 @@ class UglyProtocol(WebSocketServerProtocol):
     self.gamepadController = UglyGamepadController(self.robot)
 
 if __name__ == '__main__':
-
-  factory = WebSocketServerFactory("ws://localhost:9000")
+  url = "ws://0.0.0.0:9000"
+  factory = WebSocketServerFactory(url)
   factory.protocol = UglyProtocol
   listenWS(factory)
+  print("UglyRobot server listening on " + url)
   reactor.run()
